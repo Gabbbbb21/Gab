@@ -33,11 +33,131 @@ DELETE: Remove data or resources from the server.
 
 ## Request Payload
 
-1. Request Payload of JSON using POST (Submit a new name):
+JSON request payload for postName: Structure:
+```
+{ "lname":"necida", "fname":"justine" }
+```
+Required Fields: 
+    lname (string): The last name of the person.
+    fname (string): The first name of the person.
 
-    Structure:
-    ```
-    {
-        "lname": "hortizuela",
+JSON request payload updateName: Structure:
+```
+{ "id":1, "lname":"necida", "fname":"justine" }
+```
+Required Fields: 
+    id (integer): Identifier for the person.
+    lname (string): The last name of the person.
+    fname (string): The first name of the person.
+
+JSON request paylod deleteName: Structure:
+```
+{ "id": 1 }
+```
+Required Fields: 
+    id (integer): Identifier for the person.
+
+## Response
+
+Status Code: The HTTP status code indicates the outcome of the API request. Common status codes include:
+
+200 OK: The request was successful, and the response contains the requested data.
+201 Created: The request successfully created a new resource.
+204 No Content: The request was successful, but there is no data to return.
+400 Bad Request: The request is invalid or missing required parameters.
+401 Unauthorized: Authentication is required, or the provided credentials are invalid.
+403 Forbidden: The request is understood, but the server refuses to fulfill it.
+404 Not Found: The requested resource does not exist.
+500 Internal Server Error: An unexpected server error occurred.
+
+Response Body: The response body contains the data returned by the API. The structure and content of the response body depend on the specific API and endpoint. Responses are often formatted as JSON, but XML or other formats can be used as well.
+
+Successful Response (200 OK) - JSON Example:
+```
+{
+  "id": 123,
+  "name": "John Doe",
+  "email": "john.doe@example.com"
+}
+```
+
+Resource Created Response (201 Created) - JSON Example:
+```
+{
+  "id": 456,
+  "message": "Resource created successfully."
+}
+```
+
+Bad Request Response (400 Bad Request) - JSON Example:
+```
+{
+  "error": "Invalid input data. Please check the provided parameters."
+}
+```
+
+Not Found Response (404 Not Found) - JSON Example:
+```
+{
+  "error": "The requested resource was not found."
+}
+```
+
+## Usage
+
+```
+<?php
+
+use \Psr\Http\Message\ServerRequestInterface as Request;
+use \Psr\Http\Message\ResponseInterface as Response;
+
+require '../src/vendor/autoload.php';
+
+$app = new \Slim\App;
+
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "demo";
+
+// POST endpoint for inserting data
+$app->post('/postName', function (Request $request, Response $response, array $args) use ($servername, $username, $password, $dbname) {
+    // Parse the JSON data from the request body
+    $data = json_decode($request->getBody());
+    $fname = $data->fname;
+    $lname = $data->lname;
+
+    try {
+        // Create a new PDO database connection
+        $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
+        $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+        // SQL statement to insert data into the 'names' table
+        $sql = "INSERT INTO names (fname, lname) VALUES (:fname, :lname)";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':fname', $fname);
+        $stmt->bindParam(':lname', $lname);
+        $stmt->execute();
+
+        // Respond with a success message and the inserted data
+        $response->getBody()->write(json_encode(array("status" => "success", "data" => $data)));
+    } catch (PDOException $e) {
+        // Handle database errors and respond with an error message
+        $response->getBody()->write(json_encode(array("status" => "error", "message" => $e->getMessage())));
     }
-    ```
+
+    $conn = null;
+});
+
+$app->run();
+```
+
+## License
+
+MIT License
+
+## Contributors
+
+Justine Raphael Necida
+
+## Contact Information
