@@ -36,8 +36,8 @@ DELETE: Remove data or resources from the server.
 1. Request Payload of JSON using POST (Submit a new name):
 
     Structure:
-    `
+    ```
     {
         "lname": "hortizuela",
     }
-    `
+    ```
